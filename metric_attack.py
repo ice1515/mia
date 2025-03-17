@@ -43,10 +43,7 @@ def metric_attack_evaluation(args, targetmodel, shadowmodel, target_data, shadow
 
             # 预处理：预测出错，默认是非成员
             # baseline:PredictEntropy
-            if label != target:
-                Loss.append(100)
-            else:
-                Loss.append(ce_criterion(posterior, target).item())
+            Loss.append(ce_criterion(posterior, label).item())
 
             # GAP攻击
             if label != target:
