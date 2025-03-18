@@ -19,24 +19,22 @@ def estimate_threshold_with_shadow(shadowmodel, shadow_data, num_classes, metric
         for data in shadow_data:
             data, target = data.cuda(), data.y.cuda()
             Soutput = shadowmodel(data.x, data.edge_index, data.batch)
-            Sposterior = F.softmax(Soutput, dim=1)
-            Slabel = Soutput.max(1)[1]
+            Sposterior = F.softmax(Soutput, dim=1).cpu()  # 获取阴影模型后验概率
+            Slabel = np.argmax(Sposterior)
             if metric == 'CELoss':
-                if Slabel != target:
-                    score.append(100)
-                else:
-                    score.append(ce_criterion(Sposterior, target).item())
+                celoss = ce_criterion(Sposterior, torch.LongTensor([Slabel]))
+                score.append(celoss.item())
             elif metric == 'Maximum':
                 score.append(torch.max(Sposterior).item())
+            elif metric == 'ModifyEntropy':
+                encoding_y = F.one_hot(target, num_classes=num_classes)
+                score.extend(_Mentr(np.asarray(Sposterior.detach().cpu()), np.asarray(encoding_y.detach().cpu())))
             elif metric == 'NormalizedEntropy':
                 entropy = -1 * torch.sum(torch.mul(Sposterior, torch.log(Sposterior)))
                 if str(entropy.item()) == 'nan':  # 预处理
                     score.append(1e-100)
                 else:
                     score.append(entropy.item())
-            elif metric == 'ModifyEntropy':
-                encoding_y = F.one_hot(target, num_classes=num_classes)
-                score.extend(_Mentr(np.asarray(Sposterior.detach().cpu()), np.asarray(encoding_y.detach().cpu())))
             else:
                 print('[!] Invalid type')
 
