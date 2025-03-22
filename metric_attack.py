@@ -36,17 +36,16 @@ def metric_attack_evaluation(args, targetmodel, shadowmodel, target_data, shadow
             data, target = data.cuda(), data.y.cuda()
 
             output = targetmodel(data.x, data.edge_index, data.batch)
-            posterior = F.softmax(output, dim=1)
-            label = posterior.max(1)[1]
+            posterior = F.softmax(output, dim=1).cpu()  # 获取阴影模型后验概率
+            # label = posterior.max(1)[1]
+            label = np.argmax(posterior)
 
             ce_criterion = nn.CrossEntropyLoss()
 
-            # 预处理：预测出错，默认是非成员
-            # baseline:PredictEntropy
-            Loss.append(ce_criterion(posterior, label).item())
+            celoss = ce_criterion(posterior, torch.LongTensor([label]))
+            Loss.append(celoss.item())
 
-            # GAP攻击
-            if label != target:
+            if label.item() != target.item():
                 Gap.append(0)
             else:
                 Gap.append(1)
@@ -56,7 +55,7 @@ def metric_attack_evaluation(args, targetmodel, shadowmodel, target_data, shadow
 
             # baseline2:normalized entropy
             entropy = -1 * torch.sum(torch.mul(posterior, torch.log(posterior)))
-            if str(entropy.item()) == 'nan':
+            if str(entropy.item()) == 'nan':  # 预处理
                 Entropy.append(1e-100)
             else:
                 Entropy.append(entropy.item())
