@@ -209,7 +209,7 @@ def main():
     args.num_classes = dataset.num_classes
 
     print('[!] input dim:', args.input_dim)
-    data = torch.load(data_save_path + '_data.pt')
+    data = torch.load(data_save_path + '/data.pt')
     target_train = data['T_train_set']
     target_test = data['T_test_set']
     shadow_train = data['S_train_set']
