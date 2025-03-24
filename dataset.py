@@ -97,7 +97,7 @@ def load_data_random(args):
         'S_train_set': selected_S_train_set,
         'S_test_set': selected_S_test_set,
     }
-    torch.save(data, args.data_save_path + 'data.pt')
+    torch.save(data, args.data_save_path + '/data.pt')
     print(f"data save: {args.data_save_path}")
 
     return selected_T_train_set, selected_T_test_set, selected_S_train_set, selected_S_test_set
