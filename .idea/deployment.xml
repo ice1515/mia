@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="SHUdaijz@10.0.65.76:22 password (5)" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="SHUdaijz@10.0.65.76:22 password">
         <serverdata>
@@ -30,6 +30,13 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="SHUdaijz@10.0.65.76:22 password (5)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/SHUdaijz/lyb/decision-graph-mia-github" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="SHUdaijz@10.0.65.76:22 password (6)">
         <serverdata>
           <mappings>
@@ -52,5 +59,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
