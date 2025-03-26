@@ -74,7 +74,8 @@ def nonzero_noise_valid(data, nonzero_mask, scaler, noise_range=(0.1, 0.5)):
     sign_mask[nonzero_mask] = torch.randint(0, 2, size=(nonzero_mask.sum(),), dtype=data.x.dtype) * 2 - 1
 
     noise *= sign_mask
-    data.x[nonzero_mask] += noise[nonzero_mask]
+    # data.x[nonzero_mask] += noise[nonzero_mask]
+    data.x += noise
     return data
 
 

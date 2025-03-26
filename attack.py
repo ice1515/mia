@@ -75,7 +75,7 @@ def args_attack():
     parser.add_argument('--attack_type', type=str, default='perturb')
     parser.add_argument('--scaler', type=float, help='random noise scaler')
 
-    parser.add_argument('--perturb_type', type=str, default='fr', help='perturbation location', )
+    parser.add_argument('--perturb_type', type=str, default='fnz', help='perturbation location', )
     parser.add_argument('--noise_number', type=int, default=1000, help='perturb noise samples')
     parser.add_argument('--attack_num', type=int, default=5)
     parser.add_argument('--attack', type=int, default=1, help='execute membership inference attack or not')
