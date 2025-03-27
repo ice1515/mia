@@ -15,6 +15,8 @@
    or
    python attack.py --config configs/TUs_graph_classification_GCN_DD.json --load 1  --noise_number 1000
 
+You can load our trained target/shadow model to attack.
+
   
 
 
