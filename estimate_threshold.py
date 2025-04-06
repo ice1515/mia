@@ -14,7 +14,7 @@ def estimate_threshold_with_shadow(shadowmodel, shadow_data, num_classes, metric
     non_groundtruth = np.zeros(int(len(shadow_data) / 2))
     groundtruth = np.concatenate((mem_groundtruth, non_groundtruth))
     ce_criterion = nn.CrossEntropyLoss()
-
+    shadowmodel.eval()
     with torch.no_grad():
         for data in shadow_data:
             data, target = data.cuda(), data.y.cuda()

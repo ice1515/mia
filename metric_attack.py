@@ -27,7 +27,6 @@ def metric_attack_evaluation(args, targetmodel, shadowmodel, target_data, shadow
     Maximum = []
     ModifyEntropy = []
     Gap = []
-
     mem_groundtruth = np.ones(int(len(target_data) / 2))
     non_groundtruth = np.zeros(int(len(target_data) / 2))
     groundtruth = np.concatenate((mem_groundtruth, non_groundtruth))
