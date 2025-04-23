@@ -211,7 +211,7 @@ def main():
     args.num_classes = dataset.num_classes
 
     print('[!] input dim:', args.input_dim)
-    data = torch.load(data_save_path + 'data.pt')
+    data = torch.load(data_save_path + '/data.pt')
     target_train = data['T_train_set']
     target_test = data['T_test_set']
     shadow_train = data['S_train_set']
@@ -229,9 +229,9 @@ def main():
     # ================================ attack target model======================================
 
     Perturb = []
-    GAP, Loss, Entropy, Maximum, ModifyEntropy, f1_macro = [], [], [], [], [], []
+    GAP, Loss, Maximum, ModifyEntropy, f1_macro = [], [], [], [], []
 
-    title = ['Perturb', 'GAP', 'ModifyEntropy', 'Loss', 'Maximum', 'Entropy']
+    title = ['Perturb', 'GAP', 'ModifyEntropy', 'Loss', 'Maximum']
     path = args.result_path + f'results_{args.attack_num}.csv'
     with open(path, 'a', newline='') as f:
         writer = csv.writer(f)
@@ -244,11 +244,10 @@ def main():
         if args.attack:
 
             # ===========================baseline:  posterior-based attack=====================================
-            LossResult, EntropyResult, MaximumResult, ModifyEntropyResult, GapResult = metric_attack_evaluation(
+            LossResult, MaximumResult, ModifyEntropyResult, GapResult = metric_attack_evaluation(
                 args, targetmodel, shadowmodel, targetdata, shadowdata,
                 args.num_classes)
             Loss.append(LossResult)
-            Entropy.append(EntropyResult)
             Maximum.append(MaximumResult)
             ModifyEntropy.append(ModifyEntropyResult)
             GAP.append(GapResult)
@@ -286,7 +285,7 @@ def main():
     print("[!] Attack result:\n", Perturb)
 
     if args.attack_num > 1 and args.attack:
-        for i, data in enumerate([Perturb, GAP, ModifyEntropy, Loss, Maximum, Entropy]):
+        for i, data in enumerate([Perturb, GAP, ModifyEntropy, Loss, Maximum]):
             np.save(args.result_path + '{}.npy'.format(title[i]), data)
             process_result(path, data, title[i], args)
             print()
