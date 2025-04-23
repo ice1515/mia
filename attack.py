@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+import random
 from datetime import datetime
 
 import numpy as np
@@ -23,10 +24,9 @@ def view_model_param(model):
     return total_param
 
 
-
 def args_attack():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str,default='configs/TUs_graph_classification_GAT_ENZYMES.json')
+    parser.add_argument('--config', type=str, default='configs/TUs_graph_classification_GraphSage_DD.json')
     parser.add_argument('--device', type=str, default='0')
     parser.add_argument('--root_path', type=str, help='result and model save path')
     parser.add_argument('--result_path', type=str, help='attack result  save path')
@@ -50,7 +50,7 @@ def args_attack():
     parser.add_argument('--model_name', type=str)
     parser.add_argument('--num_hidden_layers', type=int)
     parser.add_argument('--hidden_dim', type=int)
-    parser.add_argument('--n_heads', type=int,default=8)
+    parser.add_argument('--n_heads', type=int, default=8)
     parser.add_argument('--residual', type=bool, default=False, help="Please give a value for residual")
     parser.add_argument('--dropout', type=float, default=0.0, help="Please give a value for dropout")
     parser.add_argument('--batch_norm', type=bool, default=False, help="Please give a value for batch_norm")
@@ -78,7 +78,7 @@ def args_attack():
     parser.add_argument('--perturb_type', type=str, default='fnz', help='perturbation location', )
     parser.add_argument('--noise_number', type=int, default=1000, help='perturb noise samples')
     parser.add_argument('--attack_num', type=int, default=5)
-    parser.add_argument('--attack', type=int, default=2, help='execute membership inference attack or not')
+    parser.add_argument('--attack', type=int, default=1, help='execute membership inference attack or not')
     parser.add_argument('--metric', type=str, default="acc", choices=['acc', 'entropy'],
                         help='calculate confidence score')
 
@@ -216,7 +216,6 @@ def main():
     shadow_test = data['S_test_set']
     targetdata = dataToList(target_train, target_test)
     shadowdata = dataToList(shadow_train, shadow_test)
-
     # ======================================step2: train target model======================================================
     print('[!] model :{}'.format(args.model_name))
     targetmodel, t_train_acc, t_test_acc = get_model(args, target_train, target_test, 'target',
@@ -227,9 +226,9 @@ def main():
     # ================================ attack target model======================================
 
     Perturb = []
-    GAP, Loss, Entropy, Maximum, ModifyEntropy, f1_macro = [], [], [], [], [], []
+    GAP, Loss, Maximum, ModifyEntropy, f1_macro = [], [], [], [], []
 
-    title = ['Perturb', 'GAP', 'ModifyEntropy', 'Loss', 'Maximum', 'Entropy']
+    title = ['Perturb', 'GAP', 'ModifyEntropy', 'Loss', 'Maximum']
     path = args.result_path + f'results_{args.attack_num}.csv'
     with open(path, 'a', newline='') as f:
         writer = csv.writer(f)
@@ -242,41 +241,40 @@ def main():
         if args.attack:
 
             # ===========================baseline:  posterior-based attack=====================================
-            LossResult, EntropyResult, MaximumResult, ModifyEntropyResult, GapResult = metric_attack_evaluation(
+            LossResult, MaximumResult, ModifyEntropyResult, GapResult = metric_attack_evaluation(
                 args, targetmodel, shadowmodel, targetdata, shadowdata,
                 args.num_classes)
             Loss.append(LossResult)
-            Entropy.append(EntropyResult)
             Maximum.append(MaximumResult)
             ModifyEntropy.append(ModifyEntropyResult)
             GAP.append(GapResult)
-            # for i in range(args.attack_num):
-            #     args.split_number = i
-            #     args.scaler = None
-            #     print('=' * 25 + f'attack:{i + 1}/{args.attack_num}' + '=' * 25)
-            #     start = datetime.now()
-            #     result = perturbation_attack(args, targetmodel, targetdata, shadowdata, shadowmodel, device)
-            #
-            #     Perturb.append(result)
-            #
-            #     end = datetime.now()
-            #     delta = end - start
-            #     hours = delta.days * 24 + delta.seconds // 3600
-            #     minutes = (delta.seconds % 3600) // 60
-            #     seconds = (delta.seconds % 3600) % 60
-            #     print(f"用时: {hours} 小时 {minutes} 分钟 {seconds} 秒")
-            #
-            #     writer.writerow([
-            #         *result,
-            #         title[0],
-            #         i,
-            #         f' target:{t_train_acc}\t{t_test_acc:.5f}\t{t_train_acc - t_test_acc}',
-            #         f' shadow:{s_train_acc}\t{s_test_acc:.5f}\t{s_train_acc - s_test_acc}',
-            #         args.noise_number,
-            #         GapResult[1],
-            #         f'{(result[1] - GapResult[1]) * 100}%'
-            #     ])
-            #     writer.writerow([])
+            for i in range(args.attack_num):
+                args.split_number = i
+                args.scaler = None
+                print('=' * 25 + f'attack:{i + 1}/{args.attack_num}' + '=' * 25)
+                start = datetime.now()
+                result = perturbation_attack(args, targetmodel, targetdata, shadowdata, shadowmodel, device)
+
+                Perturb.append(result)
+
+                end = datetime.now()
+                delta = end - start
+                hours = delta.days * 24 + delta.seconds // 3600
+                minutes = (delta.seconds % 3600) // 60
+                seconds = (delta.seconds % 3600) % 60
+                print(f"用时: {hours} 小时 {minutes} 分钟 {seconds} 秒")
+
+                writer.writerow([
+                    *result,
+                    title[0],
+                    i,
+                    f' target:{t_train_acc}\t{t_test_acc:.5f}\t{t_train_acc - t_test_acc}',
+                    f' shadow:{s_train_acc}\t{s_test_acc:.5f}\t{s_train_acc - s_test_acc}',
+                    args.noise_number,
+                    GapResult[1],
+                    f'{(result[1] - GapResult[1]) * 100}%'
+                ])
+                writer.writerow([])
 
             print(' target:{}\t{}   shadow:{}\t{}'.format(t_train_acc, t_test_acc, s_train_acc,
                                                           s_test_acc))
@@ -284,7 +282,7 @@ def main():
     print("[!] Attack result:\n", Perturb)
 
     if args.attack_num > 1 and args.attack:
-        for i, data in enumerate([Perturb, GAP, ModifyEntropy, Loss, Maximum, Entropy]):
+        for i, data in enumerate([Perturb, GAP, ModifyEntropy, Loss, Maximum]):
             np.save(args.result_path + '{}.npy'.format(title[i]), data)
             process_result(path, data, title[i], args)
             print()
